@@ -97,8 +97,6 @@ If SONAR_ISSUES is empty, terminate the execution.
         For any rule not listed: follow the SonarQube rule description and OWASP guidance.   
 	- Follow consistent code style and formatting per industry standards and project guidelines.
 	- **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**   
-	- **IMPORTANT: Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if absolutely necessary, you can update the existing source code to ensure it is there.
-		Avoid unnecessary private methods for logic that needs to be tested.**
 	- If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
 	- If the issue is a false positive or cannot be auto-fixed, explain why and suggest a manual review.
 	- Do not change code style or logic beyond what is necessary to fix the issue.
@@ -120,6 +118,14 @@ If SONAR_ISSUES is empty, terminate the execution.
 		- If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
 		- Keep lambda bodies simple and focused.
 	- **Do not generate lines longer than 120 characters.** Split long lines with proper line breaks and indentation.
+	- Remove or refactor unused, redundant, or overly complex code.
+	- When generating or refactoring code, **do not nest more than 3 levels** of control statements (`if`, `for`, `while`, `switch`, `try`, etc.).  
+		If deeper nesting is required, refactor the code by:
+			- Extracting inner logic into separate methods or functions.
+			- Using early returns or breaks to reduce nesting.
+			- Applying guard clauses to simplify control flow.
+	- **Do not generate lines longer than 120 characters.**  
+	  Split long lines with proper line breaks and indentation.
 	- Remove or refactor unused, redundant, or overly complex code.
 	- Maintain unique method purposes, clear naming, and thorough test coverage.
 	- Do not suppress SonarQube warnings unless absolutely necessary and justified.
@@ -153,6 +159,8 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- After each build analyze the Jacoco report `target/site/jacoco/jacoco.xml` and add new unit tests for the modified classes if necessary to increase test coverage. 
 	- For similar tests, use parameterized tests instead of duplicating test methods.
 	- **Refactor code only if necessary** to enable or improve test coverage, and document any such changes.
+	- **IMPORTANT: Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if necessary, you can update the existing source code to ensure it is there.
+		Avoid unnecessary private methods for logic that needs to be tested.**
 	- **Strive for 100% coverage** where practical, but prioritize meaningful tests that verify real behavior over superficial coverage.
 	- **Do not modify existing tests** that are passing and correct; only fix or update tests that are failing, redundant, or incorrect.
 	- **Aim for the highest possible coverage**:  
@@ -161,17 +169,9 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- **Do not edit or remove existing comments** in source code or unit tests.
 	- **Do not remove any existing tests** unless they are clearly redundant or incorrect; prefer updating or supplementing them.
 	- **Place all new test files** in the designated test directory, mirroring the package structure of the source files.
-	- When generating or refactoring code, **do not nest more than 3 levels** of control statements (`if`, `for`, `while`, `switch`, `try`, etc.).  
-		If deeper nesting is required, refactor the code by:
-			- Extracting inner logic into separate methods or functions.
-			- Using early returns or breaks to reduce nesting.
-			- Applying guard clauses to simplify control flow.
-	- **Do not generate lines longer than 120 characters.**  
-	  Split long lines with proper line breaks and indentation.
-	- Remove or refactor unused, redundant, or overly complex code.
 	- For similar tests, use parameterized tests instead of duplicating test methods.
 	- Maintain unique method purposes, clear naming, and thorough test coverage.
-	- Do not suppress SonarQube warnings unless absolutely necessary and justified.
+	- Do not suppress SonarQube warnings unless necessary and justified.
 	- Follow consistent code style and formatting per industry standards and project guidelines.
 	- Add concise comments for complex or non-obvious logic.
 	- Validate that the code builds and all tests pass after changes.
@@ -237,15 +237,15 @@ If SONAR_ISSUES is empty, terminate the execution.
 		- The `dashboardUrl` parameter should be taken from the `./target/sonar/report-task.txt` file.
 		- Use clear and structured formatting for the merge request description.
 		- **Replace all newlines in the generated markdown with `<br>` so the result is suitable for command-line or API usage.**
-		- Example structure:
-		```
-		[Detail overview of the purpose and scope of the changes.]
+			Example structure:
+			```
+			[Detail overview of the purpose and scope of the changes.]
 
-		Sonar: [dashboardUrl]
+			Sonar: [dashboardUrl]
 
-		Code Changes
-		- [List and explain all major code modifications, refactoring, and bug fixes.]
-		```
+			Code Changes
+			- [List and explain all major code modifications, refactoring, and bug fixes.]
+			```
 	- Build a concise `MR_TITLE` from the rules and files fixed with a detail description, 
 		then push the branch and create the MR in a single command using GitLab push options:
 		```bash
