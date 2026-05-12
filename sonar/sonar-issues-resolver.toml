@@ -99,7 +99,6 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**   
 	- **IMPORTANT: Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if absolutely necessary, you can update the existing source code to ensure it is there.
 		Avoid unnecessary private methods for logic that needs to be tested.**
-	- If automatic processing of the correction is not possible, create a SuppressWarnings request if this is acceptable.
 	- If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
 	- If the issue is a false positive or cannot be auto-fixed, explain why and suggest a manual review.
 	- Do not change code style or logic beyond what is necessary to fix the issue.
@@ -122,7 +121,6 @@ If SONAR_ISSUES is empty, terminate the execution.
 		- Keep lambda bodies simple and focused.
 	- **Do not generate lines longer than 120 characters.** Split long lines with proper line breaks and indentation.
 	- Remove or refactor unused, redundant, or overly complex code.
-	- For similar tests, use parameterized tests instead of duplicating test methods.
 	- Maintain unique method purposes, clear naming, and thorough test coverage.
 	- Do not suppress SonarQube warnings unless absolutely necessary and justified.
 	- Add concise comments for complex or non-obvious logic.
@@ -153,7 +151,8 @@ If SONAR_ISSUES is empty, terminate the execution.
 			
 3. Test coverage		
 	- After each build analyze the Jacoco report `target/site/jacoco/jacoco.xml` and add new unit tests for the modified classes if necessary to increase test coverage. 
-	- **Refactor code only if absolutely necessary** to enable or improve test coverage, and document any such changes.
+	- For similar tests, use parameterized tests instead of duplicating test methods.
+	- **Refactor code only if necessary** to enable or improve test coverage, and document any such changes.
 	- **Strive for 100% coverage** where practical, but prioritize meaningful tests that verify real behavior over superficial coverage.
 	- **Do not modify existing tests** that are passing and correct; only fix or update tests that are failing, redundant, or incorrect.
 	- **Aim for the highest possible coverage**:  
@@ -179,8 +178,6 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- Ensure all code is testable and covered by unit tests.
 	- **Validate the project build and test suite** after changes. If any errors or test failures are detected, fix them.
 	- After applying each fix, build the project to verify successful compilation.
-
-
 
 4. Build Verification Instructions
 	- Run the full build using Maven:
@@ -220,7 +217,7 @@ If SONAR_ISSUES is empty, terminate the execution.
 		- Avoid unnecessary explanations unless clarification is requested.
 
 7. Run Sonar Plugin
-	```
+	```bash
 	mvn -q \
 	   -Dsonar.projectKey=[Project Identifier]\
 	   -Dsonar.projectName=[Project Identifier]\
@@ -238,20 +235,19 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- Generate a `MR_DESCRIPTION` for a merge request.  
 		- The description must include a detailed summary of all code changes.
 		- The `dashboardUrl` parameter should be taken from the `./target/sonar/report-task.txt` file.
-		- Use clear and structured formatting for the merge request description, including sections such as "Code Changes", and "Additional Notes" if needed.
+		- Use clear and structured formatting for the merge request description.
 		- **Replace all newlines in the generated markdown with `<br>` so the result is suitable for command-line or API usage.**
 		- Example structure:
-			```
-			[Detail overview of the purpose and scope of the changes.]
+		```
+		[Detail overview of the purpose and scope of the changes.]
 
-			Sonar: [dashboardUrl]
+		Sonar: [dashboardUrl]
 
-			Code Changes
-			- [List and explain all major code modifications, refactoring, and bug fixes.]
-			```
-
+		Code Changes
+		- [List and explain all major code modifications, refactoring, and bug fixes.]
+		```
 	- Build a concise `MR_TITLE` from the rules and files fixed with a detail description, 
-		   then push the branch and create the MR in a single command using GitLab push options:
+		then push the branch and create the MR in a single command using GitLab push options:
 		```bash
 		git push \
 		  -o merge_request.create \
