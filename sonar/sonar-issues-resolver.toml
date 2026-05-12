@@ -59,8 +59,8 @@ If SONAR_ISSUES is empty, terminate the execution.
 1. Make sure your Git working branch is the 'main' branch, otherwise switch to the main branch.
 
 2. **Fix the SonarQube Issues**  
-   - Briefly explain the root cause of the [SONAR_ISSUES] issue.
-   - You need to fix issues described in the SonarQube report.
+	- Briefly explain the root cause of the [SONAR_ISSUES] issue.
+	- You need to fix issues described in the SonarQube report.
         - Review the codebase for SonarQube issues and apply fixes according to the strategies below.
         - **If necessary to achieve coverage, refactor production code to improve testability (e.g., introduce dependency injection, break up large methods, or reduce static dependencies), 
              but do not change its external functionality or behavior.**   
@@ -95,15 +95,16 @@ If SONAR_ISSUES is empty, terminate the execution.
         | java:S6288      | Restrict Android WebView access; disable file and JavaScript access unless required. |
         
         For any rule not listed: follow the SonarQube rule description and OWASP guidance.   
-   - **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**   
-   - Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if absolutely necessary, you can update the existing source code to ensure it is there.
-      Avoid unnecessary private methods for logic that needs to be tested.
-   - If automatic processing of the correction is not possible, create a SuppressWarnings request if this is acceptable.
-   - If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
-   - If the issue is a false positive or cannot be auto-fixed, explain why and suggest a manual review.
-   - Do not change code style or logic beyond what is necessary to fix the issue.
-   - Thoroughly test all fixes to ensure they do not introduce new issues.
-   - If you encounter any build failures, resolve them completely before proceeding to the next issue.
+	- Follow consistent code style and formatting per industry standards and project guidelines.
+	- **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**   
+	- **IMPORTANT: Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if absolutely necessary, you can update the existing source code to ensure it is there.
+		Avoid unnecessary private methods for logic that needs to be tested.**
+	- If automatic processing of the correction is not possible, create a SuppressWarnings request if this is acceptable.
+	- If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
+	- If the issue is a false positive or cannot be auto-fixed, explain why and suggest a manual review.
+	- Do not change code style or logic beyond what is necessary to fix the issue.
+	- Thoroughly test all fixes to ensure they do not introduce new issues.
+	- If you encounter any build failures, resolve them completely before proceeding to the next issue.
 	- All code must fully comply with SonarQube rules and best practices for quality, security, and maintainability.
 	- Before finalizing, ensure the code does **not** trigger any SonarQube issues, including:
 		1. Security vulnerabilities
@@ -115,18 +116,15 @@ If SONAR_ISSUES is empty, terminate the execution.
 		may also be used if the URL source is trusted. Ensure that the fix is ​​robust and resilient to DNS rebinding and other SSRF vectors.
 	- Apply recommended fixes for all relevant SonarQube rules, especially those related to security (e.g., input validation, SQL injection prevention, cryptography), reliability, and maintainability.
 	- Use clear, descriptive names for classes, methods, and variables.
-	- Ensure all code is testable and covered by unit tests.
 	- For lambda expressions:
-	  - Each lambda must contain at most **one invocation** that may throw a runtime exception.
-	  - If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
-	  - Keep lambda bodies simple and focused.
-	- **Do not generate lines longer than 120 characters.**  
-	  Split long lines with proper line breaks and indentation.
+		- Each lambda must contain at most **one invocation** that may throw a runtime exception.
+		- If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
+		- Keep lambda bodies simple and focused.
+	- **Do not generate lines longer than 120 characters.** Split long lines with proper line breaks and indentation.
 	- Remove or refactor unused, redundant, or overly complex code.
 	- For similar tests, use parameterized tests instead of duplicating test methods.
 	- Maintain unique method purposes, clear naming, and thorough test coverage.
 	- Do not suppress SonarQube warnings unless absolutely necessary and justified.
-	- Follow consistent code style and formatting per industry standards and project guidelines.
 	- Add concise comments for complex or non-obvious logic.
 	- Validate that the code builds and all tests pass after changes.
 	- Suppression (Last Resort Only):
@@ -152,32 +150,23 @@ If SONAR_ISSUES is empty, terminate the execution.
 			* <Reference any relevant ticket, ADR, or security champion approval.>
 			*/
 			@SuppressWarnings("java:SXXXX")
-   - Review and address each issue identified in the SonarQube report.
-   - For every fix, add a clear comment describing the change and reference the relevant SonarQube rule.
-   - **Follow best practices and adhere to all relevant coding standards when implementing fixes. Ensure your solutions are robust, maintainable, and consistent with industry standards.**
-   - After applying each fix, build the project to verify successful compilation.
-
-3. Ensure and Maximize Unit Test Coverage
-	- Analyze the Jacoco report `target/site/jacoco/jacoco.xml` and add new unit tests for the modified classes if necessary to increase test coverage. Test coverage should be above 85%.
+			
+3. Test coverage		
+	- After each build analyze the Jacoco report `target/site/jacoco/jacoco.xml` and add new unit tests for the modified classes if necessary to increase test coverage. 
+	- **Refactor code only if absolutely necessary** to enable or improve test coverage, and document any such changes.
+	- **Strive for 100% coverage** where practical, but prioritize meaningful tests that verify real behavior over superficial coverage.
 	- **Do not modify existing tests** that are passing and correct; only fix or update tests that are failing, redundant, or incorrect.
 	- **Aim for the highest possible coverage**:  
-	  - Cover all core logic, edge cases, and error handling scenarios.
-	  - Include tests for all public methods, important private logic (where feasible), and all branches and conditions.
+		- Cover all core logic, edge cases, and error handling scenarios.
+		- Include tests for all public methods, important private logic (where feasible), and all branches and conditions.
 	- **Do not edit or remove existing comments** in source code or unit tests.
 	- **Do not remove any existing tests** unless they are clearly redundant or incorrect; prefer updating or supplementing them.
 	- **Place all new test files** in the designated test directory, mirroring the package structure of the source files.
-	- **Validate the project build and test suite** after changes. If any errors or test failures are detected, fix them.
-	- **Refactor code only if absolutely necessary** to enable or improve test coverage, and document any such changes.
-	- **Strive for 100% coverage** where practical, but prioritize meaningful tests that verify real behavior over superficial coverage.
 	- When generating or refactoring code, **do not nest more than 3 levels** of control statements (`if`, `for`, `while`, `switch`, `try`, etc.).  
 		If deeper nesting is required, refactor the code by:
-		- Extracting inner logic into separate methods or functions.
-		- Using early returns or breaks to reduce nesting.
-		- Applying guard clauses to simplify control flow.
-	- For lambda expressions:
-	  - Each lambda must contain at most **one invocation** that may throw a runtime exception.
-	  - If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
-	  - Keep lambda bodies simple and focused.
+			- Extracting inner logic into separate methods or functions.
+			- Using early returns or breaks to reduce nesting.
+			- Applying guard clauses to simplify control flow.
 	- **Do not generate lines longer than 120 characters.**  
 	  Split long lines with proper line breaks and indentation.
 	- Remove or refactor unused, redundant, or overly complex code.
@@ -187,10 +176,23 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- Follow consistent code style and formatting per industry standards and project guidelines.
 	- Add concise comments for complex or non-obvious logic.
 	- Validate that the code builds and all tests pass after changes.
+	- Ensure all code is testable and covered by unit tests.
+	- **Validate the project build and test suite** after changes. If any errors or test failures are detected, fix them.
+	- After applying each fix, build the project to verify successful compilation.
 
-4. Build the project and fix any errors. 
-	- **IMPORTANT:** All errors must be fixed before moving on to the next step.
 
+
+4. Build Verification Instructions
+	- Run the full build using Maven:
+	   ```
+	   mvn -q verify
+	   ```
+	- If the build fails (i.e., Maven returns an error or any tests do not pass), analyze the error output.
+	- Identify the root cause of the failure and provide a clear summary of the issue.
+	- Apply the necessary code changes to fix the build, ensuring all tests and verifications pass.
+	- Re-run `mvn -q verify` to confirm the build is successful after your fix.
+	- Document the fix and verification steps in your response.
+   
 5. Generate a unique Git branch name
 	- The new branch name `FIX_ISSUES_BRANCH` should have the following format: `ai-fix-sec-sonar-iss/<DD-MM-YY>-<seqId>`
 	   - `<DD-MM-YY>` should be replaced with the current day, month, and year (e.g., `28-04-26` for April 28, 2026).
@@ -217,8 +219,7 @@ If SONAR_ISSUES is empty, terminate the execution.
 		- Ensure your output is easy to understand and directly actionable.  
 		- Avoid unnecessary explanations unless clarification is requested.
 
-7. Build Verification
-	- Run the full build: 
+7. Run Sonar Plugin
 	```
 	mvn -q \
 	   -Dsonar.projectKey=[Project Identifier]\
@@ -234,29 +235,19 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- If the build failed for another reason, exit the task with exit code `exitCode`: `1` and a description of the problem.
 
 8. Push branch and open Merge Request
-	
 	- Generate a `MR_DESCRIPTION` for a merge request.  
 		- The description must include a detailed summary of all code changes.
-		- It must also incorporate relevant information from the `./target/sonar/report-task.txt` file (such as SonarQube analysis results, new issues, resolved issues, and quality gate status).
-		- Use clear and structured markdown formatting for the merge request description, including sections such as "Summary", "SonarQube Report", "Code Changes", and "Additional Notes" if needed.
-			**Example structure:**
-			```markdown
-			# Merge Request Description
+		- The `dashboardUrl` parameter should be taken from the `./target/sonar/report-task.txt` file.
+		- Use clear and structured formatting for the merge request description, including sections such as "Code Changes", and "Additional Notes" if needed.
+		- **Replace all newlines in the generated markdown with `<br>` so the result is suitable for command-line or API usage.**
+		- Example structure:
+			```
+			[Detail overview of the purpose and scope of the changes.]
 
-			## Summary
-			- Brief overview of the purpose and scope of the changes.
+			Sonar: [dashboardUrl]
 
-			## SonarQube Report
-			- Key findings from `./target/sonar/report-task.txt`:
-			  - Quality Gate status
-			  - New issues introduced/resolved
-			  - Coverage and code smells
-
-			## Code Changes
-			- List and explain all major code modifications, refactoring, and bug fixes.
-
-			## Additional Notes
-			- Any extra context, testing instructions, or reviewer guidance.
+			Code Changes
+			- [List and explain all major code modifications, refactoring, and bug fixes.]
 			```
 
 	- Build a concise `MR_TITLE` from the rules and files fixed with a detail description, 
