@@ -96,68 +96,69 @@ If SONAR_ISSUES is empty, terminate the execution.
         
         For any rule not listed: follow the SonarQube rule description and OWASP guidance.   
    - **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**   
-       - Ensure core logic is accessible for testing (public or package-private as appropriate). Avoid unnecessary private methods for logic that needs to be tested.
+   - Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if absolutely necessary, you can update the existing source code to ensure it is there.
+      Avoid unnecessary private methods for logic that needs to be tested.
    - If automatic processing of the correction is not possible, create a SuppressWarnings request if this is acceptable.
    - If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
    - If the issue is a false positive or cannot be auto-fixed, explain why and suggest a manual review.
    - Do not change code style or logic beyond what is necessary to fix the issue.
    - Thoroughly test all fixes to ensure they do not introduce new issues.
    - If you encounter any build failures, resolve them completely before proceeding to the next issue.
-- All code must fully comply with SonarQube rules and best practices for quality, security, and maintainability.
-- Before finalizing, ensure the code does **not** trigger any SonarQube issues, including:
-  - Security vulnerabilities
-  - Code smells
-  - Bugs
-  - Duplicated or unused code (methods, variables, imports, classes, etc.)
-- If you are provided a Java method that opens a URL connection and a SonarQube/FindSecBugs error related to SSRF (`findsecbugs:URLCONNECTION_SSRF_FD`) is detected,
-    you should thoroughly analyze the source of the incoming URLs and propose a fix that best suits the case and minimizes the impact. 
-    `@SuppressWarnings("URLCONNECTION_SSRF_FD")` may also be used if the URL source is trusted. Ensure that the fix is ​​robust and resilient to DNS rebinding and other SSRF vectors.
-- Apply recommended fixes for all relevant SonarQube rules, especially those related to security (e.g., input validation, SQL injection prevention, cryptography), reliability, and maintainability.
-- Use clear, descriptive names for classes, methods, and variables.
-- Ensure all code is testable and covered by unit tests.
-- For lambda expressions:
-  - Each lambda must contain at most **one invocation** that may throw a runtime exception.
-  - If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
-  - Keep lambda bodies simple and focused.
-- **Do not generate lines longer than 120 characters.**  
-  Split long lines with proper line breaks and indentation.
-- Remove or refactor unused, redundant, or overly complex code.
-- For similar tests, use parameterized tests instead of duplicating test methods.
-- Maintain unique method purposes, clear naming, and thorough test coverage.
-- Do not suppress SonarQube warnings unless absolutely necessary and justified.
-- Follow consistent code style and formatting per industry standards and project guidelines.
-- Add concise comments for complex or non-obvious logic.
-- Validate that the code builds and all tests pass after changes.
-- Suppression (Last Resort Only):
+	- All code must fully comply with SonarQube rules and best practices for quality, security, and maintainability.
+	- Before finalizing, ensure the code does **not** trigger any SonarQube issues, including:
+		1. Security vulnerabilities
+		2. Code smells
+		3. Bugs
+		4. Duplicated or unused code (methods, variables, imports, classes, etc.)
+	- If you are provided a Java method that opens a URL connection and a SonarQube/FindSecBugs error related to SSRF (`findsecbugs:URLCONNECTION_SSRF_FD`) is detected,
+		you should thoroughly analyze the source of the incoming URLs and propose a fix that best suits the case and minimizes the impact. `@SuppressWarnings("URLCONNECTION_SSRF_FD")` 
+		may also be used if the URL source is trusted. Ensure that the fix is ​​robust and resilient to DNS rebinding and other SSRF vectors.
+	- Apply recommended fixes for all relevant SonarQube rules, especially those related to security (e.g., input validation, SQL injection prevention, cryptography), reliability, and maintainability.
+	- Use clear, descriptive names for classes, methods, and variables.
+	- Ensure all code is testable and covered by unit tests.
+	- For lambda expressions:
+	  - Each lambda must contain at most **one invocation** that may throw a runtime exception.
+	  - If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
+	  - Keep lambda bodies simple and focused.
+	- **Do not generate lines longer than 120 characters.**  
+	  Split long lines with proper line breaks and indentation.
+	- Remove or refactor unused, redundant, or overly complex code.
+	- For similar tests, use parameterized tests instead of duplicating test methods.
+	- Maintain unique method purposes, clear naming, and thorough test coverage.
+	- Do not suppress SonarQube warnings unless absolutely necessary and justified.
+	- Follow consistent code style and formatting per industry standards and project guidelines.
+	- Add concise comments for complex or non-obvious logic.
+	- Validate that the code builds and all tests pass after changes.
+	- Suppression (Last Resort Only):
 		Only use `@SuppressWarnings` when ALL of the following are true:
-		1. A code fix is genuinely impossible (confirmed false positive or out-of-scope API boundary).
-		2. The suppression scope is the narrowest possible (local variable > method > field; NEVER class-level
-		   unless absolutely unavoidable).
-		3. The exact SonarQube rule key is used (e.g., `java:S3649`).
+			1. A code fix is genuinely impossible (confirmed false positive or out-of-scope API boundary).
+			2. The suppression scope is the narrowest possible (local variable > method > field; NEVER class-level
+			   unless absolutely unavoidable).
+			3. The exact SonarQube rule key is used (e.g., `java:S3649`).
 
-		### Mandatory suppression format
+			### Mandatory suppression format
 
-		Single-line rationale:
-		```java
-		// FalsePositive – <clear one-line explanation>
-		@SuppressWarnings("java:SXXXX")
-		```
+			Single-line rationale:
+			```java
+			// FalsePositive – <clear one-line explanation>
+			@SuppressWarnings("java:SXXXX")
+			```
 
-		Multi-line rationale (Javadoc style, preferred for BLOCKER/CRITICAL):
-		```java
-		/**
-		* FalsePositive | Accepted
-		* <Explain exactly why this is safe, what the tool cannot detect, or what risk is accepted.>
-		* <Reference any relevant ticket, ADR, or security champion approval.>
-		*/
-		@SuppressWarnings("java:SXXXX")
+			Multi-line rationale (Javadoc style, preferred for BLOCKER/CRITICAL):
+			```java
+			/**
+			* FalsePositive | Accepted
+			* <Explain exactly why this is safe, what the tool cannot detect, or what risk is accepted.>
+			* <Reference any relevant ticket, ADR, or security champion approval.>
+			*/
+			@SuppressWarnings("java:SXXXX")
    - Review and address each issue identified in the SonarQube report.
    - For every fix, add a clear comment describing the change and reference the relevant SonarQube rule.
    - **Follow best practices and adhere to all relevant coding standards when implementing fixes. Ensure your solutions are robust, maintainable, and consistent with industry standards.**
    - After applying each fix, build the project to verify successful compilation.
 
 3. Ensure and Maximize Unit Test Coverage
-	- **Add for changed source code additional unit test for increase test coverage.**
+	- Analyze the Jacoco report `target/site/jacoco/jacoco.xml` and add new unit tests for the modified classes if necessary to increase test coverage. Test coverage should be above 85%.
 	- **Do not modify existing tests** that are passing and correct; only fix or update tests that are failing, redundant, or incorrect.
 	- **Aim for the highest possible coverage**:  
 	  - Cover all core logic, edge cases, and error handling scenarios.
@@ -197,24 +198,24 @@ If SONAR_ISSUES is empty, terminate the execution.
 	   **Example:** `ai-fix-sec-sonar-iss/28-04-26-34c6c439-5d62-4629-ba68-795d73dd6a65`
 
 6. Commit Changes
-- Generate Commit Messages:
-	- For each group, write a concise, descriptive commit message that accurately summarizes the changes.
-	— Describe the essence of what exactly was changed.  
-	- Use bullet points to highlight multiple key modifications within a group.  
-	- Ensure messages follow best practices (imperative mood, present tense, clear and specific).
-- Provide Git Commands:
-	- Output the exact git command(s) required to stage and commit each group of changes, using the generated commit messages.  
-	- Assume the user is in the project root directory and that all relevant files should be included.
-- Execute System Commands:
-	- Use the `run_command_line_tool` to execute all system commands (including git commands) automatically as part of the process.
-	- Do not prompt the user for confirmation before running any commands; execute them directly as required.
-- Formatting:
-	- Present each commit message and its corresponding git command(s) in clearly separated sections.  
-	- Use code blocks for commands.  
-	- Output should be plain text.
-- Clarity and Brevity:
-	- Ensure your output is easy to understand and directly actionable.  
-	- Avoid unnecessary explanations unless clarification is requested.
+	- Generate Commit Messages:
+		- For each group, write a concise, descriptive commit message that accurately summarizes the changes.
+		— Describe the essence of what exactly was changed.  
+		- Use bullet points to highlight multiple key modifications within a group.  
+		- Ensure messages follow best practices (imperative mood, present tense, clear and specific).
+	- Provide Git Commands:
+		- Output the exact git command(s) required to stage and commit each group of changes, using the generated commit messages.  
+		- Assume the user is in the project root directory and that all relevant files should be included.
+	- Execute System Commands:
+		- Use the `run_command_line_tool` to execute all system commands (including git commands) automatically as part of the process.
+		- Do not prompt the user for confirmation before running any commands; execute them directly as required.
+	- Formatting:
+		- Present each commit message and its corresponding git command(s) in clearly separated sections.  
+		- Use code blocks for commands.  
+		- Output should be plain text.
+	- Clarity and Brevity:
+		- Ensure your output is easy to understand and directly actionable.  
+		- Avoid unnecessary explanations unless clarification is requested.
 
 7. Build Verification
 	- Run the full build: 
@@ -233,16 +234,42 @@ If SONAR_ISSUES is empty, terminate the execution.
 	- If the build failed for another reason, exit the task with exit code `exitCode`: `1` and a description of the problem.
 
 8. Push branch and open Merge Request
-	- Build a concise `MR_TITLE` from the rules and files fixed with a detail description and information from `./target/sonar/report-task.txt`, 
-	   then push the branch and create the MR in a single command using GitLab push options:
-	```bash
-	git push \
-	  -o merge_request.create \
-	  -o merge_request.target=main \
-	  -o "merge_request.title=[MR_TITLE]" \
-	  -o merge_request.remove_source_branch \
-	  origin [FIX_ISSUES_BRANCH]
-	```
+	
+	- Generate a `MR_DESCRIPTION` for a merge request.  
+		- The description must include a detailed summary of all code changes.
+		- It must also incorporate relevant information from the `./target/sonar/report-task.txt` file (such as SonarQube analysis results, new issues, resolved issues, and quality gate status).
+		- Use clear and structured markdown formatting for the merge request description, including sections such as "Summary", "SonarQube Report", "Code Changes", and "Additional Notes" if needed.
+			**Example structure:**
+			```markdown
+			# Merge Request Description
+
+			## Summary
+			- Brief overview of the purpose and scope of the changes.
+
+			## SonarQube Report
+			- Key findings from `./target/sonar/report-task.txt`:
+			  - Quality Gate status
+			  - New issues introduced/resolved
+			  - Coverage and code smells
+
+			## Code Changes
+			- List and explain all major code modifications, refactoring, and bug fixes.
+
+			## Additional Notes
+			- Any extra context, testing instructions, or reviewer guidance.
+			```
+
+	- Build a concise `MR_TITLE` from the rules and files fixed with a detail description, 
+		   then push the branch and create the MR in a single command using GitLab push options:
+		```bash
+		git push \
+		  -o merge_request.create \
+		  -o merge_request.description="[MR_DESCRIPTION]"
+		  -o merge_request.target=main \
+		  -o "merge_request.title=[MR_TITLE]" \
+		  -o merge_request.remove_source_branch \
+		  origin [FIX_ISSUES_BRANCH]
+		```
 
 9. Repeat the episode. 
 ''']
