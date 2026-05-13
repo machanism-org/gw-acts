@@ -22,7 +22,9 @@ inputs = [
 '''
 # Task
 
-1. SonarQube API URL
+1. Make sure your Git working branch is the 'main' branch, otherwise switch to the [SOURCE_BRANCH].
+
+2. SonarQube API URL
     - Determine the correct value for `COMPONENT_KEYS` based on the `Project Layout` parameters:
       - If `Relative Path from Root Directory` is not `.`, set `COMPONENT_KEYS` = `[Parent Directory Name]:[Project Identifier]`, otherwice: `COMPONENT_KEYS` = `[Project Identifier]`.
     - Construct the `SONARQUBE_URL` as follows:  `${SONAR_HOST_URL}/api/issues/search?componentKeys=[Parent Directory Name]:[Project Identifier]&ps=20` and other required query parameters.
@@ -33,14 +35,14 @@ inputs = [
     - If the response contains zero issues, end the task.
     - If the project has `Modules`, then skip next steps for current project and continue.
 
-2. Call the SonarQube API URL constructed above and Review the Appropriate SonarQube Report: 
+3. Call the SonarQube API URL constructed above and Review the Appropriate SonarQube Report: 
    - If the response returns an error, terminated the process with exitCode `500` and desctionpin message.
    - For each issue in the JSON, identify the file, line number, rule, and message.
    - Briefly explain the root cause of the issue.
 
-3. Parse the JSON response; extract for each issue:
+4. Parse the JSON response; extract for each issue:
    - `key`, `rule`, `severity`, `message`, `component`, `line`, `textRange`
-4. Group issues by `rule` to batch identical fixes across the codebase.
+5. Group issues by `rule` to batch identical fixes across the codebase.
 
 ## Analyze Issues
 
@@ -56,11 +58,17 @@ If SONAR_ISSUES is empty, terminate the execution.
 
 # Task
 
-1. Make sure your Git working branch is the 'main' branch, otherwise switch to the main branch.
+1. Make sure your Git working branch is the 'main' branch, otherwise switch to the [SOURCE_BRANCH].
 
 2. **Fix the SonarQube Issues**  
 	- Briefly explain the root cause of the [SONAR_ISSUES] issue.
 	- You need to fix issues described in the SonarQube report.
+	- When reviewing or generating code, always ensure compliance with Sonar development rules.  
+		**Instructions:**
+		- Identify and explain any violations of Sonar rules in the code.
+		- Suggest corrections or improvements based on the guidance from the Sonar development rules document.
+		- When providing recommendations, cite the relevant rule identifier (e.g., java:S3012) and include a brief summary from the documentation.
+		- Encourage developers to consult the Sonar rules documentation for further details and best practices.
         - Review the codebase for SonarQube issues and apply fixes according to the strategies below.
         - **If necessary to achieve coverage, refactor production code to improve testability (e.g., introduce dependency injection, break up large methods, or reduce static dependencies), 
              but do not change its external functionality or behavior.**   
@@ -69,32 +77,29 @@ If SONAR_ISSUES is empty, terminate the execution.
         - Do not change business logic unless required for the security fix.
         - Place all new or updated test files in the appropriate test directory, mirroring the package structure.
         - After applying fixes and adding tests, validate the project build and run the full test suite. If any errors or test failures are detected, fix them and document the changes.
-        
-        Common Java security remediations (non-exhaustive):
-        
-        | Rule            | Fix strategy |
-        |-----------------|--------------|
-        | java:S2076      | Use ProcessBuilder with a list-form command; never interpolate user input into a shell string. |
-        | java:S2078      | Validate and sanitise LDAP filter inputs; use escaped literals. |
-        | java:S2083      | Canonicalise file paths and verify they remain under the allowed base directory. |
-        | java:S2091      | Use parameterised XPath expressions or a safe XPath API. |
-        | java:S2631      | Validate and compile regex patterns from untrusted sources with timeout guards. |
-        | java:S3649      | Use PreparedStatement or ORM parameterised queries; never concatenate SQL. |
-        | java:S4036      | Qualify executable paths in ProcessBuilder; do not rely on PATH. |
-        | java:S4426      | Use RSA/EC key sizes ≥ 2048/256 bits; reject weak key generation parameters. |
-        | java:S5042      | Add entry count and uncompressed size limits when processing ZIP archives. |
-        | java:S5131      | Encode all user-controlled values before inserting into HTTP responses (XSS). |
-        | java:S5145      | Sanitise log messages to prevent log injection (strip CR/LF from user input). |
-        | java:S5167      | Never forward raw HTTP request headers to downstream services. |
-        | java:S5247      | Disable template auto-escaping only on explicitly trusted, static templates. |
-        | java:S5300      | Do not use Object.wait/notify without a guarding condition inside a while loop. |
-        | java:S5344      | Hash passwords with bcrypt, scrypt, or Argon2; never MD5/SHA-1 alone. |
-        | java:S5542      | Use AES-GCM or AES-CCM; never ECB mode. |
-        | java:S5547      | Use TLS 1.2+ only; disable SSLv3, TLS 1.0, TLS 1.1. |
-        | java:S6096      | Validate zip entry paths against the extraction target directory (Zip Slip). |
-        | java:S6288      | Restrict Android WebView access; disable file and JavaScript access unless required. |
-        
-        For any rule not listed: follow the SonarQube rule description and OWASP guidance.   
+        - Common Java security remediations (non-exhaustive):
+ 			| Rule            | Fix strategy |
+			|-----------------|--------------|
+			| java:S2076      | Use ProcessBuilder with a list-form command; never interpolate user input into a shell string. |
+			| java:S2078      | Validate and sanitise LDAP filter inputs; use escaped literals. |
+			| java:S2083      | Canonicalise file paths and verify they remain under the allowed base directory. |
+			| java:S2091      | Use parameterised XPath expressions or a safe XPath API. |
+			| java:S2631      | Validate and compile regex patterns from untrusted sources with timeout guards. |
+			| java:S3649      | Use PreparedStatement or ORM parameterised queries; never concatenate SQL. |
+			| java:S4036      | Qualify executable paths in ProcessBuilder; do not rely on PATH. |
+			| java:S4426      | Use RSA/EC key sizes ≥ 2048/256 bits; reject weak key generation parameters. |
+			| java:S5042      | Add entry count and uncompressed size limits when processing ZIP archives. |
+			| java:S5131      | Encode all user-controlled values before inserting into HTTP responses (XSS). |
+			| java:S5145      | Sanitise log messages to prevent log injection (strip CR/LF from user input). |
+			| java:S5167      | Never forward raw HTTP request headers to downstream services. |
+			| java:S5247      | Disable template auto-escaping only on explicitly trusted, static templates. |
+			| java:S5300      | Do not use Object.wait/notify without a guarding condition inside a while loop. |
+			| java:S5344      | Hash passwords with bcrypt, scrypt, or Argon2; never MD5/SHA-1 alone. |
+			| java:S5542      | Use AES-GCM or AES-CCM; never ECB mode. |
+			| java:S5547      | Use TLS 1.2+ only; disable SSLv3, TLS 1.0, TLS 1.1. |
+			| java:S6096      | Validate zip entry paths against the extraction target directory (Zip Slip). |
+			| java:S6288      | Restrict Android WebView access; disable file and JavaScript access unless required. |
+         - For any rule not listed: follow the SonarQube rule description and OWASP guidance.   
 	- Follow consistent code style and formatting per industry standards and project guidelines.
 	- **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**   
 	- If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
@@ -236,6 +241,7 @@ If SONAR_ISSUES is empty, terminate the execution.
 		- The description must include a detailed summary of all code changes.
 		- The `dashboardUrl` parameter should be taken from the `./target/sonar/report-task.txt` file.
 		- Use clear and structured formatting for the merge request description.
+		- Do not add `Verification` section.
 		- **Replace all newlines in the generated markdown with `<br>` so the result is suitable for command-line or API usage.**
 			Example structure:
 			```
