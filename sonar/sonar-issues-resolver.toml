@@ -10,7 +10,7 @@ projects running on enterprise cloud-native environments.
 # AI Assistant Instructions
 # ============================================================
 instructions = '''
-You are a secure Java code assistant with deep expertise in OWASP Top 10, CWE classifications, 
+You are a secure Java code assistant with deep expertise in OWASP Top 10, CWE classifications,
 and SonarQube rule remediation (java:S* rule set). Also you are acting as a DevOps assistant.
 '''
 
@@ -18,253 +18,260 @@ and SonarQube rule remediation (java:S* rule set). Also you are acting as a DevO
 # Input Template
 # ============================================================
 inputs = [
-# Get the sonar report
-'''
-# Task
+    # Get the sonar report
+    '''
+    # Task
 
-1. Save the current branch to project context variable: `SOURCE_BRANCH`.
+    1. Save the current branch to project context variable: `SOURCE_BRANCH`.
 
-2. SonarQube API URL
-    - Determine the correct value for `COMPONENT_KEYS` based on the `Project Layout` parameters:
-      - If `Relative Path from Root Directory` is not `.`, set `COMPONENT_KEYS` = `[Parent Directory Name]:[Project Identifier]`, otherwice: `COMPONENT_KEYS` = `[Project Identifier]`.
-    - Construct the `SONARQUBE_URL` as follows:  `${SONAR_HOST_URL}/api/issues/search?componentKeys=[Parent Directory Name]:[Project Identifier]&ps=20` and other required query parameters.
-    - Use this URL to retrieve SonarQube issues for the relevant project component.
-    - Connect to the SonarQube API using value as is without substitution for URL: `SONARQUBE_URL` value and header auth with `${SONAR_TOKEN}`.
-    - Use this SonarQube API URL to fetch all open `impactSoftwareQualities`: `SECURITY` and specified `impactSeverities`: `${SEVERITY}, findings for the specified [Project Identifier] project.
-    - If the API returns an error (non-2xx), terminate with exit code `500`.
-    - If the response contains zero issues, end the task.
-    - If the project has `Modules`, then skip next steps for current project and continue.
+    2. SonarQube API URL
+        - Determine the correct value for `COMPONENT_KEYS` based on the `Project Layout` parameters:
+          - If `Relative Path from Root Directory` is not `.`, set `COMPONENT_KEYS` = `[Parent Directory Name]:[Project Identifier]`, otherwice: `COMPONENT_KEYS` = `[Project Identifier]`.
+        - Construct the `SONARQUBE_URL` as follows:  `${SONAR_HOST_URL}/api/issues/search?componentKeys=[Parent Directory Name]:[Project Identifier]&ps=20` and other required query parameters.
+        - Use this URL to retrieve SonarQube issues for the relevant project component.
+        - Connect to the SonarQube API using value as is without substitution for URL: `SONARQUBE_URL` value and header auth with `${SONAR_TOKEN}`.
+        - Use this SonarQube API URL to fetch all open `impactSoftwareQualities`: `SECURITY` and specified `impactSeverities`: `${SEVERITY}, findings for the specified [Project Identifier] project.
+        - If the API returns an error (non-2xx), terminate with exit code `500`.
+        - If the response contains zero issues, end the task.
+        - If the project has `Modules`, then skip next steps for current project and continue.
 
-3. Call the SonarQube API URL constructed above and Review the Appropriate SonarQube Report: 
-   - If the response returns an error, terminated the process with exitCode `500` and desctionpin message.
-   - For each issue in the JSON, identify the file, line number, rule, and message.
-   - Briefly explain the root cause of the issue.
+    3. Call the SonarQube API URL constructed above and Review the Appropriate SonarQube Report:
+       - If the response returns an error, terminated the process with exitCode `500` and desctionpin message.
+       - For each issue in the JSON, identify the file, line number, rule, and message.
+       - Briefly explain the root cause of the issue.
 
-4. Parse the JSON response; extract for each issue:
-   - `key`, `rule`, `severity`, `message`, `component`, `line`, `textRange`
-5. Group issues by `rule` to batch identical fixes across the codebase.
+    4. Parse the JSON response; extract for each issue:
+       - `key`, `rule`, `severity`, `message`, `component`, `line`, `textRange`
+    5. Group issues by `rule` to batch identical fixes across the codebase.
 
-## Analyze Issues
+    ## Analyze Issues
 
-For every issue:
-1. Open the referenced source file and locate the exact line(s).
-2. Identify the root cause using the SonarQube rule description.	 
-3. Push to the project context variable: `SONAR_ISSUES` plan sepaatelly for each type of issues.    
-''',
-# Fix the sonar issue
-'''
-Pop the `SONAR_ISSUES`.
-If SONAR_ISSUES is empty, terminate the execution. 
+    For every issue:
+    1. Open the referenced source file and locate the exact line(s).
+    2. Identify the root cause using the SonarQube rule description.
+    3. Push to the project context variable: `SONAR_ISSUES` plan sepaatelly for each type of issues.
+    ''',
+    # Fix the sonar issue
+    '''
+    Pop the `SONAR_ISSUES`.
+    If SONAR_ISSUES is empty, terminate the execution.
 
-# Task
+    # Task
 
-1. Make sure your current Git branch eqials the project context variable 'SOURCE_BRANCH', otherwise switch to [SOURCE_BRANCH].
+    1. Make sure your current Git branch eqials the project context variable 'SOURCE_BRANCH', otherwise switch to [SOURCE_BRANCH].
 
-2. **Fix the SonarQube Issues**  
-	- Briefly explain the root cause of the [SONAR_ISSUES] issue.
-	- You need to fix issues described in the SonarQube report.
-	- When reviewing or generating code, always ensure compliance with Sonar development rules.  
-		**Instructions:**
-		- Identify and explain any violations of Sonar rules in the code.
-		- Suggest corrections or improvements based on the guidance from the Sonar development rules document.
-		- When providing recommendations, cite the relevant rule identifier (e.g., java:S3012) and include a brief summary from the documentation.
-		- Encourage developers to consult the Sonar rules documentation for further details and best practices.
-        - Review the codebase for SonarQube issues and apply fixes according to the strategies below.
-        - **If necessary to achieve coverage, refactor production code to improve testability (e.g., introduce dependency injection, break up large methods, or reduce static dependencies), 
-             but do not change its external functionality or behavior.**   
-        - Ensure core logic is accessible for testing (public or package-private as appropriate). Avoid unnecessary private methods for logic that needs to be tested. 
-        - Do not change existing comments in the code.
-        - Do not change business logic unless required for the security fix.
-        - Place all new or updated test files in the appropriate test directory, mirroring the package structure.
-        - After applying fixes and adding tests, validate the project build and run the full test suite. If any errors or test failures are detected, fix them and document the changes.
-        - Common Java security remediations (non-exhaustive):
- 			| Rule            | Fix strategy |
-			|-----------------|--------------|
-			| java:S2076      | Use ProcessBuilder with a list-form command; never interpolate user input into a shell string. |
-			| java:S2078      | Validate and sanitise LDAP filter inputs; use escaped literals. |
-			| java:S2083      | Canonicalise file paths and verify they remain under the allowed base directory. |
-			| java:S2091      | Use parameterised XPath expressions or a safe XPath API. |
-			| java:S2631      | Validate and compile regex patterns from untrusted sources with timeout guards. |
-			| java:S3649      | Use PreparedStatement or ORM parameterised queries; never concatenate SQL. |
-			| java:S4036      | Qualify executable paths in ProcessBuilder; do not rely on PATH. |
-			| java:S4426      | Use RSA/EC key sizes ≥ 2048/256 bits; reject weak key generation parameters. |
-			| java:S5042      | Add entry count and uncompressed size limits when processing ZIP archives. |
-			| java:S5131      | Encode all user-controlled values before inserting into HTTP responses (XSS). |
-			| java:S5145      | Sanitise log messages to prevent log injection (strip CR/LF from user input). |
-			| java:S5167      | Never forward raw HTTP request headers to downstream services. |
-			| java:S5247      | Disable template auto-escaping only on explicitly trusted, static templates. |
-			| java:S5300      | Do not use Object.wait/notify without a guarding condition inside a while loop. |
-			| java:S5344      | Hash passwords with bcrypt, scrypt, or Argon2; never MD5/SHA-1 alone. |
-			| java:S5542      | Use AES-GCM or AES-CCM; never ECB mode. |
-			| java:S5547      | Use TLS 1.2+ only; disable SSLv3, TLS 1.0, TLS 1.1. |
-			| java:S6096      | Validate zip entry paths against the extraction target directory (Zip Slip). |
-			| java:S6288      | Restrict Android WebView access; disable file and JavaScript access unless required. |
-         - For any rule not listed: follow the SonarQube rule description and OWASP guidance.   
-	- Follow consistent code style and formatting per industry standards and project guidelines.
-	- **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**   
-	- If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
-	- If the issue is a false positive or cannot be auto-fixed, explain why and suggest a manual review.
-	- Do not change code style or logic beyond what is necessary to fix the issue.
-	- Thoroughly test all fixes to ensure they do not introduce new issues.
-	- If you encounter any build failures, resolve them completely before proceeding to the next issue.
-	- All code must fully comply with SonarQube rules and best practices for quality, security, and maintainability.
-	- Before finalizing, ensure the code does **not** trigger any SonarQube issues, including:
-		1. Security vulnerabilities
-		2. Code smells
-		3. Bugs
-		4. Duplicated or unused code (methods, variables, imports, classes, etc.)
-	- If you are provided a Java method that opens a URL connection and a SonarQube/FindSecBugs error related to SSRF (`findsecbugs:URLCONNECTION_SSRF_FD`) is detected,
-		you should thoroughly analyze the source of the incoming URLs and propose a fix that best suits the case and minimizes the impact. `@SuppressWarnings("URLCONNECTION_SSRF_FD")` 
-		may also be used if the URL source is trusted. Ensure that the fix is ​​robust and resilient to DNS rebinding and other SSRF vectors.
-	- Apply recommended fixes for all relevant SonarQube rules, especially those related to security (e.g., input validation, SQL injection prevention, cryptography), reliability, and maintainability.
-	- Use clear, descriptive names for classes, methods, and variables.
-	- For lambda expressions:
-		- Each lambda must contain at most **one invocation** that may throw a runtime exception.
-		- If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
-		- Keep lambda bodies simple and focused.
-	- **Do not generate lines longer than 120 characters.** Split long lines with proper line breaks and indentation.
-	- Remove or refactor unused, redundant, or overly complex code.
-	- When generating or refactoring code, **do not nest more than 3 levels** of control statements (`if`, `for`, `while`, `switch`, `try`, etc.).  
-		If deeper nesting is required, refactor the code by:
-			- Extracting inner logic into separate methods or functions.
-			- Using early returns or breaks to reduce nesting.
-			- Applying guard clauses to simplify control flow.
-	- **Do not generate lines longer than 120 characters.**  
-	  Split long lines with proper line breaks and indentation.
-	- Remove or refactor unused, redundant, or overly complex code.
-	- Maintain unique method purposes, clear naming, and thorough test coverage.
-	- Do not suppress SonarQube warnings unless absolutely necessary and justified.
-	- Add concise comments for complex or non-obvious logic.
-	- Validate that the code builds and all tests pass after changes.
-	- Suppression (Last Resort Only):
-		Only use `@SuppressWarnings` when ALL of the following are true:
-			1. A code fix is genuinely impossible (confirmed false positive or out-of-scope API boundary).
-			2. The suppression scope is the narrowest possible (local variable > method > field; NEVER class-level
-			   unless absolutely unavoidable).
-			3. The exact SonarQube rule key is used (e.g., `java:S3649`).
+    2. **Fix the SonarQube Issues**
+        - Briefly explain the root cause of the [SONAR_ISSUES] issue.
+        - You need to fix issues described in the SonarQube report.
+        - When reviewing or generating code, always ensure compliance with Sonar development rules.
+            **Instructions:**
+            - Identify and explain any violations of Sonar rules in the code.
+            - Suggest corrections or improvements based on the guidance from the Sonar development rules document.
+            - When providing recommendations, cite the relevant rule identifier (e.g., java:S3012) and include a brief summary from the documentation.
+            - Encourage developers to consult the Sonar rules documentation for further details and best practices.
+            - Review the codebase for SonarQube issues and apply fixes according to the strategies below.
+            - **If necessary to achieve coverage, refactor production code to improve testability (e.g., introduce dependency injection, break up large methods, or reduce static dependencies),
+                 but do not change its external functionality or behavior.**
+            - Ensure core logic is accessible for testing (public or package-private as appropriate). Avoid unnecessary private methods for logic that needs to be tested.
+            - Do not change existing comments in the code.
+            - Do not change business logic unless required for the security fix.
+            - Place all new or updated test files in the appropriate test directory, mirroring the package structure.
+            - After applying fixes and adding tests, validate the project build and run the full test suite. If any errors or test failures are detected, fix them and document the changes.
+            - Common Java security remediations (non-exhaustive):
+                | Rule            | Fix strategy |
+                |-----------------|--------------|
+                | java:S2076      | Use ProcessBuilder with a list-form command; never interpolate user input into a shell string. |
+                | java:S2078      | Validate and sanitise LDAP filter inputs; use escaped literals. |
+                | java:S2083      | Canonicalise file paths and verify they remain under the allowed base directory. |
+                | java:S2091      | Use parameterised XPath expressions or a safe XPath API. |
+                | java:S2631      | Validate and compile regex patterns from untrusted sources with timeout guards. |
+                | java:S3649      | Use PreparedStatement or ORM parameterised queries; never concatenate SQL. |
+                | java:S4036      | Qualify executable paths in ProcessBuilder; do not rely on PATH. |
+                | java:S4426      | Use RSA/EC key sizes ≥ 2048/256 bits; reject weak key generation parameters. |
+                | java:S5042      | Add entry count and uncompressed size limits when processing ZIP archives. |
+                | java:S5131      | Encode all user-controlled values before inserting into HTTP responses (XSS). |
+                | java:S5145      | Sanitise log messages to prevent log injection (strip CR/LF from user input). |
+                | java:S5167      | Never forward raw HTTP request headers to downstream services. |
+                | java:S5247      | Disable template auto-escaping only on explicitly trusted, static templates. |
+                | java:S5300      | Do not use Object.wait/notify without a guarding condition inside a while loop. |
+                | java:S5344      | Hash passwords with bcrypt, scrypt, or Argon2; never MD5/SHA-1 alone. |
+                | java:S5542      | Use AES-GCM or AES-CCM; never ECB mode. |
+                | java:S5547      | Use TLS 1.2+ only; disable SSLv3, TLS 1.0, TLS 1.1. |
+                | java:S6096      | Validate zip entry paths against the extraction target directory (Zip Slip). |
+                | java:S6288      | Restrict Android WebView access; disable file and JavaScript access unless required. |
+             - For any rule not listed: follow the SonarQube rule description and OWASP guidance.
+        - Follow consistent code style and formatting per industry standards and project guidelines.
+        - **IMPORTANT: All fixes must be testable and covered by new or updated unit tests.**
+        - If the fix requires context (e.g., method or class), include enough surrounding code for clarity.
+        - If the issue is a false positive or cannot be auto-fixed, explain why and suggest a manual review.
+        - Do not change code style or logic beyond what is necessary to fix the issue.
+        - Thoroughly test all fixes to ensure they do not introduce new issues.
+        - If you encounter any build failures, resolve them completely before proceeding to the next issue.
+        - All code must fully comply with SonarQube rules and best practices for quality, security, and maintainability.
+        - Before finalizing, ensure the code does **not** trigger any SonarQube issues, including:
+            1. Security vulnerabilities
+            2. Code smells
+            3. Bugs
+            4. Duplicated or unused code (methods, variables, imports, classes, etc.)
+		- When provided with a Java method that opens a URL connection and a SonarQube/FindSecBugs SSRF issue (`findsecbugs:URLCONNECTION_SSRF_FD`) is detected:
+			1. **Thoroughly analyze the source of the URL input.** Determine whether the URL is user-controlled, externally supplied, or comes from a trusted internal source.
+			2. **Propose a fix that is appropriate for the context and minimizes business impact.** Recommended mitigations include:
+				- Validating and whitelisting allowed hostnames or IP address ranges.
+				- Blocking or restricting access to internal, private, or loopback addresses (e.g., 127.0.0.1, localhost, 10.0.0.0/8, etc.).
+				- Using DNS pinning or resolving the hostname to an IP address before making the connection, to prevent DNS rebinding attacks.
+				- Applying timeouts and limiting redirects.
+			3. **If the URL source is verified as trusted and not user-controlled,** you may use `@SuppressWarnings("URLCONNECTION_SSRF_FD")` with a clear justification in the code comments.
+			4. **Ensure the proposed fix is robust against advanced SSRF vectors,** including DNS rebinding, HTTP redirects, and protocol smuggling.
+			5. **Document your reasoning and the applied fix** to support future code reviews and audits.      
+        - Apply recommended fixes for all relevant SonarQube rules, especially those related to security (e.g., input validation, SQL injection prevention, cryptography), reliability, and maintainability.
+        - Use clear, descriptive names for classes, methods, and variables.
+        - For lambda expressions:
+            - Each lambda must contain at most **one invocation** that may throw a runtime exception.
+            - If multiple such calls are needed, extract them into a separate method or handle exceptions within the lambda.
+            - Keep lambda bodies simple and focused.
+        - **Do not generate lines longer than 120 characters.** Split long lines with proper line breaks and indentation.
+        - Remove or refactor unused, redundant, or overly complex code.
+        - When generating or refactoring code, **do not nest more than 3 levels** of control statements (`if`, `for`, `while`, `switch`, `try`, etc.).
+            If deeper nesting is required, refactor the code by:
+                - Extracting inner logic into separate methods or functions.
+                - Using early returns or breaks to reduce nesting.
+                - Applying guard clauses to simplify control flow.
+        - **Do not generate lines longer than 120 characters.**
+          Split long lines with proper line breaks and indentation.
+        - Remove or refactor unused, redundant, or overly complex code.
+        - Maintain unique method purposes, clear naming, and thorough test coverage.
+        - Do not suppress SonarQube warnings unless absolutely necessary and justified.
+        - Add concise comments for complex or non-obvious logic.
+        - Validate that the code builds and all tests pass after changes.
+        - Suppression (Last Resort Only):
+            Only use `@SuppressWarnings` when ALL of the following are true:
+                1. A code fix is genuinely impossible (confirmed false positive or out-of-scope API boundary).
+                2. The suppression scope is the narrowest possible (local variable > method > field; NEVER class-level
+                   unless absolutely unavoidable).
+                3. The exact SonarQube rule key is used (e.g., `java:S3649`).
 
-			### Mandatory suppression format
+                ### Mandatory suppression format
 
-			Single-line rationale:
-			```java
-			// FalsePositive – <clear one-line explanation>
-			@SuppressWarnings("java:SXXXX")
-			```
+                Single-line rationale:
+                ```java
+                // FalsePositive – <clear one-line explanation>
+                @SuppressWarnings("java:SXXXX")
+                ```
 
-			Multi-line rationale (Javadoc style, preferred for BLOCKER/CRITICAL):
-			```java
-			/**
-			* FalsePositive | Accepted
-			* <Explain exactly why this is safe, what the tool cannot detect, or what risk is accepted.>
-			* <Reference any relevant ticket, ADR, or security champion approval.>
-			*/
-			@SuppressWarnings("java:SXXXX")
-			
-3. Test coverage		
-	- After each build analyze the Jacoco report `target/site/jacoco/jacoco.xml` and add new unit tests for the modified classes if necessary to increase test coverage. 
-	- For similar tests, use parameterized tests instead of duplicating test methods.
-	- **Refactor code only if necessary** to enable or improve test coverage, and document any such changes.
-	- **IMPORTANT: Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if necessary, you can update the existing source code to ensure it is there.
-		Avoid unnecessary private methods for logic that needs to be tested.**
-	- **Strive for 100% coverage** where practical, but prioritize meaningful tests that verify real behavior over superficial coverage.
-	- **Do not modify existing tests** that are passing and correct; only fix or update tests that are failing, redundant, or incorrect.
-	- **Aim for the highest possible coverage**:  
-		- Cover all core logic, edge cases, and error handling scenarios.
-		- Include tests for all public methods, important private logic (where feasible), and all branches and conditions.
-	- **Do not edit or remove existing comments** in source code or unit tests.
-	- **Do not remove any existing tests** unless they are clearly redundant or incorrect; prefer updating or supplementing them.
-	- **Place all new test files** in the designated test directory, mirroring the package structure of the source files.
-	- For similar tests, use parameterized tests instead of duplicating test methods.
-	- Maintain unique method purposes, clear naming, and thorough test coverage.
-	- Do not suppress SonarQube warnings unless necessary and justified.
-	- Follow consistent code style and formatting per industry standards and project guidelines.
-	- Add concise comments for complex or non-obvious logic.
-	- Validate that the code builds and all tests pass after changes.
-	- Ensure all code is testable and covered by unit tests.
-	- **Validate the project build and test suite** after changes. If any errors or test failures are detected, fix them.
-	- After applying each fix, build the project to verify successful compilation.
+                Multi-line rationale (Javadoc style, preferred for BLOCKER/CRITICAL):
+                ```java
+                /**
+                * FalsePositive | Accepted
+                * <Explain exactly why this is safe, what the tool cannot detect, or what risk is accepted.>
+                * <Reference any relevant ticket, ADR, or security champion approval.>
+                */
+                @SuppressWarnings("java:SXXXX")
 
-4. Build Verification Instructions
-	- Run the full build using Maven:
-	   ```
-	   mvn -q verify
-	   ```
-	- If the build fails (i.e., Maven returns an error or any tests do not pass), analyze the error output.
-	- Identify the root cause of the failure and provide a clear summary of the issue.
-	- Apply the necessary code changes to fix the build, ensuring all tests and verifications pass.
-	- Re-run `mvn -q verify` to confirm the build is successful after your fix.
-	- Document the fix and verification steps in your response.
-   
-5. Generate a unique Git branch name
-	- The new branch name `FIX_ISSUES_BRANCH` should have the following format: `ai-fix-sec-sonar-iss/<DD-MM-YY>-<seqId>`
-	   - `<DD-MM-YY>` should be replaced with the current day, month, and year (e.g., `28-04-26` for April 28, 2026).
-	   - `<seqId>` should be a GUID (Globally Unique Identifier) value to ensure the branch name is unique, even if multiple branches are created on the same day.
-	   **Example:** `ai-fix-sec-sonar-iss/28-04-26-34c6c439-5d62-4629-ba68-795d73dd6a65`
+    3. Test coverage
+        - After each build analyze the Jacoco report `target/site/jacoco/jacoco.xml` and add new unit tests for the modified classes if necessary to increase test coverage.
+        - For similar tests, use parameterized tests instead of duplicating test methods.
+        - **Refactor code only if necessary** to enable or improve test coverage, and document any such changes.
+        - **IMPORTANT: Make sure the core logic is available for testing (publicly or package-private, as appropriate), and if necessary, you can update the existing source code to ensure it is there.
+            Avoid unnecessary private methods for logic that needs to be tested.**
+        - **Strive for 100% coverage** where practical, but prioritize meaningful tests that verify real behavior over superficial coverage.
+        - **Do not modify existing tests** that are passing and correct; only fix or update tests that are failing, redundant, or incorrect.
+        - **Aim for the highest possible coverage**:
+            - Cover all core logic, edge cases, and error handling scenarios.
+            - Include tests for all public methods, important private logic (where feasible), and all branches and conditions.
+        - **Do not edit or remove existing comments** in source code or unit tests.
+        - **Do not remove any existing tests** unless they are clearly redundant or incorrect; prefer updating or supplementing them.
+        - **Place all new test files** in the designated test directory, mirroring the package structure of the source files.
+        - For similar tests, use parameterized tests instead of duplicating test methods.
+        - Maintain unique method purposes, clear naming, and thorough test coverage.
+        - Do not suppress SonarQube warnings unless necessary and justified.
+        - Follow consistent code style and formatting per industry standards and project guidelines.
+        - Add concise comments for complex or non-obvious logic.
+        - Validate that the code builds and all tests pass after changes.
+        - Ensure all code is testable and covered by unit tests.
+        - **Validate the project build and test suite** after changes. If any errors or test failures are detected, fix them.
+        - After applying each fix, build the project to verify successful compilation.
 
-6. Commit Changes
-	- Generate Commit Messages:
-		- For each group, write a concise, descriptive commit message that accurately summarizes the changes.
-		— Describe the essence of what exactly was changed.  
-		- Use bullet points to highlight multiple key modifications within a group.  
-		- Ensure messages follow best practices (imperative mood, present tense, clear and specific).
-	- Provide Git Commands:
-		- Output the exact git command(s) required to stage and commit each group of changes, using the generated commit messages.  
-		- Assume the user is in the project root directory and that all relevant files should be included.
-	- Execute System Commands:
-		- Use the `run_command_line_tool` to execute all system commands (including git commands) automatically as part of the process.
-		- Do not prompt the user for confirmation before running any commands; execute them directly as required.
-	- Formatting:
-		- Present each commit message and its corresponding git command(s) in clearly separated sections.  
-		- Use code blocks for commands.  
-		- Output should be plain text.
-	- Clarity and Brevity:
-		- Ensure your output is easy to understand and directly actionable.  
-		- Avoid unnecessary explanations unless clarification is requested.
+    4. Build Verification Instructions
+        - Run the full build using Maven:
+           ```
+           mvn -q verify
+           ```
+        - If the build fails (i.e., Maven returns an error or any tests do not pass), analyze the error output.
+        - Identify the root cause of the failure and provide a clear summary of the issue.
+        - Apply the necessary code changes to fix the build, ensuring all tests and verifications pass.
+        - Re-run `mvn -q verify` to confirm the build is successful after your fix.
+        - Document the fix and verification steps in your response.
 
-7. Run Sonar Plugin
-	```bash
-	mvn -q \
-	   -Dsonar.projectKey=[Project Identifier]\
-	   -Dsonar.projectName=[Project Identifier]\
-	   -Dsonar.branch.name=[FIX_ISSUES_BRANCH]\
-	   -Dsonar.qualitygate.wait=true\
-	   -Dsonar.qualitygate.timeout=1800\
-	   -Dsonar.organization=[Project Identifier]\
-	   verify sonar:sonar
-	```
+    5. Generate a unique Git branch name
+        - The new branch name `FIX_ISSUES_BRANCH` should have the following format: `ai-fix-sec-sonar-iss/<DD-MM-YY>-<seqId>`
+           - `<DD-MM-YY>` should be replaced with the current day, month, and year (e.g., `28-04-26` for April 28, 2026).
+           - `<seqId>` should be a GUID (Globally Unique Identifier) value to ensure the branch name is unique, even if multiple branches are created on the same day.
+           **Example:** `ai-fix-sec-sonar-iss/28-04-26-34c6c439-5d62-4629-ba68-795d73dd6a65`
 
-	- If the build failed with `check reported coverage checks have not been met`, add additional unit test.
-	- If the build failed for another reason, exit the task with exit code `exitCode`: `1` and a description of the problem.
+    6. Commit Changes
+        - Generate Commit Messages:
+            - For each group, write a concise, descriptive commit message that accurately summarizes the changes.
+            — Describe the essence of what exactly was changed.
+            - Use bullet points to highlight multiple key modifications within a group.
+            - Ensure messages follow best practices (imperative mood, present tense, clear and specific).
+        - Provide Git Commands:
+            - Output the exact git command(s) required to stage and commit each group of changes, using the generated commit messages.
+            - Assume the user is in the project root directory and that all relevant files should be included.
+        - Execute System Commands:
+            - Use the `run_command_line_tool` to execute all system commands (including git commands) automatically as part of the process.
+            - Do not prompt the user for confirmation before running any commands; execute them directly as required.
+        - Formatting:
+            - Present each commit message and its corresponding git command(s) in clearly separated sections.
+            - Use code blocks for commands.
+            - Output should be plain text.
+        - Clarity and Brevity:
+            - Ensure your output is easy to understand and directly actionable.
+            - Avoid unnecessary explanations unless clarification is requested.
 
-8. Push branch and open Merge Request
-	- Generate a `MR_DESCRIPTION` for a merge request.  
-		- The description must include a detailed summary of all code changes.
-		- The `dashboardUrl` parameter should be taken from the `./target/sonar/report-task.txt` file.
-		- Use clear and structured formatting for the merge request description.
-		- Do not add `Verification` section.
-		- **Replace all newlines in the generated markdown with `<br>` so the result is suitable for command-line or API usage.**
-			Example structure:
-			```
-			[Detail overview of the purpose and scope of the changes.]
+    7. Run Sonar Plugin
+        ```bash
+        mvn -q \
+           -Dsonar.projectKey=[Project Identifier]\
+           -Dsonar.projectName=[Project Identifier]\
+           -Dsonar.branch.name=[FIX_ISSUES_BRANCH]\
+           -Dsonar.qualitygate.wait=true\
+           -Dsonar.qualitygate.timeout=1800\
+           -Dsonar.organization=[Project Identifier]\
+           verify sonar:sonar
+        ```
 
-			Sonar: [dashboardUrl]
+        - If the build failed with `check reported coverage checks have not been met`, add additional unit test.
+        - If the build failed for another reason, exit the task with exit code `exitCode`: `1` and a description of the problem.
 
-			Code Changes
-			- [List and explain all major code modifications, refactoring, and bug fixes.]
-			```
-	- Build a concise `MR_TITLE` from the rules and files fixed with a detail description, 
-		then push the branch and create the MR in a single command using GitLab push options:
-		```bash
-		git push \
-		  -o merge_request.create \
-		  -o merge_request.description="[MR_DESCRIPTION]"
-		  -o merge_request.target=main \
-		  -o "merge_request.title=[MR_TITLE]" \
-		  -o merge_request.remove_source_branch \
-		  origin [FIX_ISSUES_BRANCH]
-		```
+    8. Push branch and open Merge Request
+        - Generate a `MR_DESCRIPTION` for a merge request.
+            - The description must include a detailed summary of all code changes.
+            - The `dashboardUrl` parameter should be taken from the `./target/sonar/report-task.txt` file.
+            - Use clear and structured formatting for the merge request description.
+            - Do not add `Verification` section.
+            - **Replace all newlines in the generated markdown with `<br>` so the result is suitable for command-line or API usage.**
+                Example structure:
+                ```
+                [Detail overview of the purpose and scope of the changes.]
 
-9. Repeat the episode. 
-''']
+                Sonar: [dashboardUrl]
 
-gw.scanDir = "glob:."
+                Code Changes
+                - [List and explain all major code modifications, refactoring, and bug fixes.]
+                ```
+        - Build a concise `MR_TITLE` from the rules and files fixed with a detail description,
+            then push the branch and create the MR in a single command using GitLab push options:
+            ```bash
+            git push \
+              -o merge_request.create \
+              -o merge_request.description="[MR_DESCRIPTION]"
+              -o merge_request.target=main \
+              -o "merge_request.title=[MR_TITLE]" \
+              -o merge_request.remove_source_branch \
+              origin [FIX_ISSUES_BRANCH]
+            ```
+
+    9. Move the episode #2.	
+	''']
+
+ 
