@@ -22,7 +22,7 @@ inputs = [
 '''
 # Task
 
-1. Make sure your Git working branch is the 'main' branch, otherwise switch to the [SOURCE_BRANCH].
+1. Save the current branch to project context variable: `SOURCE_BRANCH`.
 
 2. SonarQube API URL
     - Determine the correct value for `COMPONENT_KEYS` based on the `Project Layout` parameters:
@@ -58,7 +58,7 @@ If SONAR_ISSUES is empty, terminate the execution.
 
 # Task
 
-1. Make sure your Git working branch is the 'main' branch, otherwise switch to the [SOURCE_BRANCH].
+1. Make sure your current Git branch eqials the project context variable 'SOURCE_BRANCH', otherwise switch to [SOURCE_BRANCH].
 
 2. **Fix the SonarQube Issues**  
 	- Briefly explain the root cause of the [SONAR_ISSUES] issue.
