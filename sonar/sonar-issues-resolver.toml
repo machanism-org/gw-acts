@@ -102,14 +102,29 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
    - Open the affected files and inspect the exact code locations.
    - Use the SonarQube rule intent to drive the fix.
 
-4. Apply the fix
-   - Fix only what is necessary.
-   - Do not change business logic unless required for the security remediation.
-   - Do not change existing comments.
-   - Keep code style consistent.
-   - Keep line length at or below 120 characters.
-   - Avoid deep nesting; refactor with guard clauses or helper methods if needed.
-   - Remove redundant or overly complex code only when it supports the fix.
+4. Apply the fix  
+   - Fix only what is necessary.  
+   - Do not change business logic unless required for the security remediation.  
+   - Do not change existing comments.  
+   - Keep code style consistent.  
+   - Keep line length at or below 120 characters.  
+   - Avoid deep nesting; refactor with guard clauses or helper methods if needed.  
+   - Remove redundant or overly complex code only when it supports the fix.  
+   - **Generate testable code:**  
+      - Structure your code to facilitate unit testing and maintainability.  
+      - Prefer package-private or protected methods over private static methods when possible, as this allows for easier testing and mocking.  
+      - Design methods with clear, single responsibilities and minimal side effects.  
+      - Ensure that new or refactored code can be covered by automated tests without requiring complex workarounds.  
+   - **Follow best Sonar rules:**  
+      - Apply fixes in accordance with SonarQube’s recommended best practices.  
+      - Ensure that your changes do not introduce any new Sonar issues or warnings.  
+   - **Comply with java:S109 (Too many parameters):**  
+      - Refactor methods to have no more than 7 parameters.  
+      - If a method requires more than 7 parameters, consider grouping related parameters into objects or using builder patterns to improve readability and maintainability.  
+   - **Comply with java:S5778 (Log forging):**  
+      - Sanitize any user-controlled or external input before logging it to prevent log forging vulnerabilities.  
+      - Remove or escape line breaks (`\n`, `\r`) and other control characters from log messages that include user input.  
+      - Ensure that logs cannot be manipulated to inject fake log entries or obscure real ones.
 
 5. Security and remediation rules
    - Follow SonarQube rule guidance and OWASP recommendations.
