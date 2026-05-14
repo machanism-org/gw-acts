@@ -170,20 +170,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
       - Apply fixes in accordance with SonarQube’s recommended best practices.  
       - Ensure that your changes do not introduce any new Sonar issues or warnings.  
 	 
-3. Save the list of updated source files to the project context variable: `UPDATED_SOURCE_FILES`.
-
-# Special instructions
-
-%s
-	 
-''',
-
-'''
-# Episode 4 — Create Unit Tests
-
-# Goal
-
-1. Test coverage
+3. Test coverage
    - Add or update unit tests for modified files defined in the project context variable: `UPDATED_SOURCE_FILES`.
    - Prefer parameterized tests for similar scenarios.
    - Keep logic testable; if required, refactor for testability without changing behavior.
@@ -191,7 +178,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
    - Aim for meaningful high coverage, especially for changed logic and edge cases.
    - Review `target/site/jacoco/jacoco.xml` after build if available.
 
-2. Suppression policy
+4. Suppression policy
    - Use `@SuppressWarnings` only as a last resort.
    - Allowed only when:
      1. a real fix is not feasible,
@@ -201,7 +188,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
      `@SuppressWarnings("java:SXXXX")`
    - Add a concise safety rationale directly above the suppression.
 
-3. Build verification
+5. Build verification
    - Run:
      `mvn -q verify`
    - If the build fails:
@@ -210,15 +197,10 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
      - rerun verification until successful.
    - If coverage checks fail, add more unit tests.
 
-4. Commit changes
-   - Create a concise, clear commit message for the current fix group.
-   - Stage and commit changes using system command execution.
-   - Commands must be executed automatically.
-
-5. Run Sonar analysis
+6. Run Sonar analysis
    - Run:
      `mvn -q -Dsonar.projectKey=[Project Identifier] -Dsonar.projectName=[Project Identifier] -Dsonar.branch.name=[FIX_ISSUES_BRANCH] -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=1800 -Dsonar.organization=[Project Identifier] verify sonar:sonar`
-   - If coverage checks fail, repeat the episode.
+   - If coverage checks fail, add more unit tests.
    - If another failure occurs, exit with code `1` and describe the problem.
    
 # Special instructions
@@ -228,11 +210,16 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 ''',
 
 '''
-# Episode 5 - Create Merge Request 
+# Episode 4 - Create Merge Request 
 
 # Goal
 
-1. Prepare merge request content
+1. Commit changes
+   - Create a concise, clear commit message for the current fix group.
+   - Stage and commit changes using system command execution.
+   - Commands must be executed automatically.
+
+2. Prepare merge request content
    - Read `./target/sonar/report-task.txt` and obtain the dashboard URL.
    - Build:
      - `MR_TITLE`
@@ -243,7 +230,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
      - key code changes
    - Replace all newlines with `<br>`.
 
-2. Push branch and create merge request
+3. Push branch and create merge request
    - Push with GitLab merge request options in one command:
      - create merge request
      - set description
@@ -251,7 +238,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
      - set title
      - remove source branch
 
-3. Continue flow
+4. Continue flow
    - Move to the episode 2 to process the next grouped issue batch.
 
 # Special instructions
