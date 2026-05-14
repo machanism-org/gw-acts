@@ -195,7 +195,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
      - remove source branch
 
 15. Continue flow
-   - Move to episode `#2` to process the next grouped issue batch.
+   - Repeate the episode to process the next grouped issue batch.
 
 # Output
 - one issue group fixed and validated
