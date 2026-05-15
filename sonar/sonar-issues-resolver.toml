@@ -6,8 +6,6 @@ Resolves SonarQube SECURITY issues in Java projects by:
 4. validating build and tests after each batch,
 5. running Sonar again on a dedicated branch,
 6. pushing the branch and creating a merge request.
-
-This refactored version is organized for readability and maintenance.
 '''
 
 instructions = '''
@@ -84,7 +82,7 @@ Fetch open SECURITY issues from SonarQube, analyze them, and store grouped work 
 ''',
 
 '''
-# Episode 2 - Create a Fix Branch
+# Episode 2 — Create a Fix Branch
 
 # Goal
 Pop one grouped issue plan from context, fix it, validate it, commit it, run Sonar, and prepare merge request output.
@@ -92,20 +90,20 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 1. Switch to source branch
    - Switch to the branche by project context variable `SOURCE_BRANCH`.
 
-1. Load next work item
+2. Load next work item
    - Pop `SONAR_ISSUES` and save it as `CURRENT_SONAR_ISSUES`.
    - If `SONAR_ISSUES` is empty, terminate execution.
 
-2. Generate a unique Git branch name
+3. Generate a unique Git branch name
 	- The new branch name `FIX_ISSUES_BRANCH` should have the following format: `ai-fix-sec-sonar-iss/<DD-MM-YY>-<seqId>`
 	   - `<DD-MM-YY>` should be replaced with the current day, month, and year (e.g., `28-04-26` for April 28, 2026).
 	   - `<seqId>` should be a GUID (Globally Unique Identifier) value to ensure the branch name is unique, even if multiple branches are created on the same day.
 	   **Example:** `ai-fix-sec-sonar-iss/28-04-26-34c6c439-5d62-4629-ba68-795d73dd6a65`
 
-3. Create and swithch to the fix branch
+4. Create and swithch to the fix branch
    - Create the branch: `FIX_ISSUES_BRANCH`.
 
-4. Run Initial Sonar analysis
+5. Run Initial Sonar analysis
    - Run:
      `mvn -q -Dsonar.projectKey=[Project Identifier] -Dsonar.projectName=[Project Identifier] -Dsonar.branch.name=[FIX_ISSUES_BRANCH] -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=1800 -Dsonar.organization=[Project Identifier] verify sonar:sonar`
 
@@ -118,7 +116,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 '''
 # Episode 3 — Fix One Group of Sonar Issues
 
-**Important Rules**
+# Code Generation Rules
 
 - Follow SonarQube rule guidance and OWASP recommendations.
 - Use rule-specific fixes where applicable, for example:
@@ -143,22 +141,9 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 		- block internal/private/loopback targets where appropriate,
 		- consider DNS rebinding and redirect risks,
 		- apply timeouts and redirect limits.
- - Only if the URL source is verified safe and a real code fix is not appropriate, use narrowly scoped suppression with a clear justification.
- - For rules not explicitly listed, follow the SonarQube rule description.
-
-# Goal
-
-1. Analyze the issue group
-   - Briefly explain the root cause of the current `[CURRENT_SONAR_ISSUES]`.
-   - Open the affected files and inspect the exact code locations.
-   - Use the SonarQube rule intent to drive the fix.
-
-2. Apply the fix  
-   - Fix only what is necessary.  
-   - Do not change business logic unless required for the security remediation.  
-   - Do not change existing comments.  
-   - Keep code style consistent.  
-   - Keep line length at or below 120 characters.  
+- Only if the URL source is verified safe and a real code fix is not appropriate, use narrowly scoped suppression with a clear justification.
+- For rules not explicitly listed, follow the SonarQube rule description.
+- Keep line length at or below 120 characters.  
    - Avoid deep nesting; refactor with guard clauses or helper methods if needed.  
    - Remove redundant or overly complex code only when it supports the fix.  
    - **Generate testable code:**  
@@ -169,16 +154,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
    - **Follow best Sonar rules:**  
       - Apply fixes in accordance with SonarQube’s recommended best practices.  
       - Ensure that your changes do not introduce any new Sonar issues or warnings.  
-	 
-3. Test coverage
-   - Add or update unit tests for modified files defined in the project context variable: `UPDATED_SOURCE_FILES`.
-   - Prefer parameterized tests for similar scenarios.
-   - Keep logic testable; if required, refactor for testability without changing behavior.
-   - Do not modify passing and correct existing tests unless necessary.
-   - Aim for meaningful high coverage, especially for changed logic and edge cases.
-   - Review `target/site/jacoco/jacoco.xml` after build if available.
-
-4. Suppression policy
+- Suppression policy
    - Use `@SuppressWarnings` only as a last resort.
    - Allowed only when:
      1. a real fix is not feasible,
@@ -188,7 +164,31 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
      `@SuppressWarnings("java:SXXXX")`
    - Add a concise safety rationale directly above the suppression.
 
-5. Build verification
+# Goal
+
+1. Analyze the issue group
+   - Briefly explain the root cause of the current `[CURRENT_SONAR_ISSUES]`.
+   - Open the affected files and inspect the exact code locations.
+   - Use the SonarQube rule intent to drive the fix.
+
+2. Apply the fix  
+   - Follow the code generation rules defined above.
+   - Fix only what is necessary.  
+   - Do not change business logic unless required for the security remediation.  
+   - Do not change existing comments.  
+   - Keep code style consistent.  
+ 	 
+3. Test coverage
+   - After applying the fix, ensure that the modified code is covered by unit tests.
+   - Follow the code generation rules for testability.
+   - Add or update unit tests for modified files defined in the project context variable: `UPDATED_SOURCE_FILES`.
+   - Prefer parameterized tests for similar scenarios.
+   - Keep logic testable; if required, refactor for testability without changing behavior.
+   - Do not modify passing and correct existing tests unless necessary.
+   - Aim for meaningful high coverage, especially for changed logic and edge cases.
+   - Review `target/site/jacoco/jacoco.xml` after build if available.
+
+4. Build verification
    - Run:
      `mvn -q verify`
    - If the build fails:
@@ -197,7 +197,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
      - rerun verification until successful.
    - If coverage checks fail, add more unit tests.
 
-6. Run Sonar analysis
+5. Run Sonar analysis
    - Run:
      `mvn -q -Dsonar.projectKey=[Project Identifier] -Dsonar.projectName=[Project Identifier] -Dsonar.branch.name=[FIX_ISSUES_BRANCH] -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=1800 -Dsonar.organization=[Project Identifier] verify sonar:sonar`
    - If coverage checks fail, add more unit tests.
