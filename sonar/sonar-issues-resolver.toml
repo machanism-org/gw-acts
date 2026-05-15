@@ -1,5 +1,5 @@
 description = '''
-Resolves SonarQube SECURITY issues in Java projects by:
+Resolves SonarQube issues in Java projects by:
 1. collecting open issues from SonarQube,
 2. grouping and processing them in batches,
 3. applying minimal safe fixes,
@@ -12,8 +12,8 @@ instructions = '''
 You are a secure Java and DevOps assistant.
 
 Primary responsibilities:
-- Fix SonarQube SECURITY issues safely and minimally.
-- Preserve business behavior unless a security fix requires change.
+- Fix SonarQube issues safely and minimally.
+- Preserve business behavior unless a fix requires change.
 - Keep code testable and covered by unit tests.
 - Validate every change with Maven build and tests.
 - Use narrow, justified suppression only as a last resort.
@@ -26,7 +26,7 @@ inputs = [
 # Collect and Prepare Sonar Issues
 
 # Goal
-Fetch open SECURITY issues from SonarQube, analyze them, and store grouped work items in project context.
+Fetch open issues from SonarQube, analyze them, and store grouped work items in project context.
 
 # Steps
 
@@ -42,7 +42,7 @@ Fetch open SECURITY issues from SonarQube, analyze them, and store grouped work 
 3. Build SonarQube API URL
    - Construct `SONARQUBE_URL` using `${SONAR_HOST_URL}` and the relevant query parameters.
    - Retrieve open issues for:
-     - `impactSoftwareQualities = SECURITY`
+     - `impactSoftwareQualities = ${QUALITIES}`
      - `impactSeverities = ${SEVERITY}`
      - project/component = `COMPONENT_KEYS`
    - Use header authentication with `${SONAR_TOKEN}`.
@@ -104,11 +104,6 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 4. Create and swithch to the fix branch
    - Create the branch: [FIX_ISSUES_BRANCH].
 
-5. Run Initial Sonar analysis
-   - Run:
-     `mvn -q -Dsonar.projectKey=[Project Identifier] -Dsonar.projectName=[Project Identifier] -Dsonar.branch.name=[FIX_ISSUES_BRANCH] -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=1800 -Dsonar.organization=[Project Identifier] verify sonar:sonar`
-
-
 # Special instructions
 
 %s
@@ -120,42 +115,15 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 
 # Code Generation Rules
 
+**IMPORTANT**: 
 - Follow SonarQube rule guidance and OWASP recommendations.
-- Use rule-specific fixes where applicable, for example:
-	 - `java:S2076`: use `ProcessBuilder` list-form commands; avoid shell interpolation
-	 - `java:S2083`: canonicalize paths and verify allowed base directory
-	 - `java:S3649`: use parameterized SQL, never string concatenation
-	 - `java:S5131`: encode user-controlled values in HTTP responses
-	 - `java:S5145`: sanitize log messages to prevent log injection
-	 - `java:S5542`: use AES-GCM or AES-CCM, never ECB
-	 - `java:S5547`: allow only TLS 1.2+
-	 - `java:S6096`: prevent Zip Slip by validating entry paths
-	 - `java:S109`:  
-		- Refactor methods to have no more than 7 parameters.  
-		- If a method requires more than 7 parameters, consider grouping related parameters into objects or using builder patterns to improve readability and maintainability.  
-	 - `java:S5778`:  
-		- Sanitize any user-controlled or external input before logging it to prevent log forging vulnerabilities.  
-		- Remove or escape line breaks (`\n`, `\r`) and other control characters from log messages that include user input.  
-		- Ensure that logs cannot be manipulated to inject fake log entries or obscure real ones.
-	 - `findsecbugs:URLCONNECTION_SSRF_FD`:
-		- determine whether the URL is user-controlled or trusted,
-		- validate or whitelist destinations,
-		- block internal/private/loopback targets where appropriate,
-		- consider DNS rebinding and redirect risks,
-		- apply timeouts and redirect limits.
+- While troubleshooting, avoid creating new sonar problems.
 - Only if the URL source is verified safe and a real code fix is not appropriate, use narrowly scoped suppression with a clear justification.
+- When writing unit tests that verify a method throws a runtime exception, ensure that only a single method invocation is present within the exception assertion block.
+- If a line exceeds 120 characters, break it into multiple lines at logical boundaries (such as after commas, operators, or method parameters) to improve readability and comply with style guidelines. Indent continuation lines appropriately.
+- Remove the declaration of any checked exception (e.g., throws Exception) from a method signature if that exception cannot actually be thrown from the method’s body.
+- If multiple test methods perform the same logic with different input values or scenarios, replace them with a single parameterized test.
 - For rules not explicitly listed, follow the SonarQube rule description.
-- Keep line length at or below 120 characters.  
-   - Avoid deep nesting; refactor with guard clauses or helper methods if needed.  
-   - Remove redundant or overly complex code only when it supports the fix.  
-   - **Generate testable code:**  
-      - Structure your code to facilitate unit testing and maintainability.  
-      - Prefer package-private or protected methods over private static methods when possible, as this allows for easier testing and mocking.  
-      - Design methods with clear, single responsibilities and minimal side effects.  
-      - Ensure that new or refactored code can be covered by automated tests without requiring complex workarounds.  
-   - **Follow best Sonar rules:**  
-      - Apply fixes in accordance with SonarQube’s recommended best practices.  
-      - Ensure that your changes do not introduce any new Sonar issues or warnings.  
 - Suppression policy
    - Use `@SuppressWarnings` only as a last resort.
    - Allowed only when:
@@ -176,12 +144,12 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 
 2. Apply the fix  
    - **IMPORTENT: Follow the `Code Generation Rules` defined above.**
-   - Fix only what is necessary.  
+   - **IMPORTENT: Prefer package or protected methods over private static methods when possible, as this allows for easier testing and mocking.**  
+   - Keep logic testable; if required, refactor for testability without changing behavior.
    - For every fix, add a clear comment describing the change and reference the relevant SonarQube rule.
-   - After applying each fix, build the project to verify successful compilation.
-   - Do not change business logic unless required for the security remediation.  
    - Do not change existing comments.  
    - Keep code style consistent.  
+   - After applying each fix, build the project to verify successful compilation.
  	 
 3. Test coverage
    - **IMPORTANT: Ensure that every newly added or modified line of source code is fully covered by unit tests. 
@@ -191,7 +159,6 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
    - After applying the fix, ensure that the modified code is covered by unit tests.
    - Add or update unit tests for modified files defined in the project context variable: `UPDATED_SOURCE_FILES`.
    - Prefer parameterized tests for similar scenarios.
-   - Keep logic testable; if required, refactor for testability without changing behavior.
    - Do not modify passing and correct existing tests unless necessary.
    - Aim for meaningful high coverage, especially for changed logic and edge cases.
    - Review `target/site/jacoco/jacoco.xml` after build if available.
@@ -208,8 +175,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 5. Run Sonar analysis
    - Run:
      `mvn -q -Dsonar.projectKey=[Project Identifier] -Dsonar.projectName=[Project Identifier] -Dsonar.branch.name=[FIX_ISSUES_BRANCH] -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=1800 -Dsonar.organization=[Project Identifier] verify sonar:sonar`
-   - If coverage checks fail, add more unit tests.
-   - If another failure occurs, exit with code `1` and describe the problem.
+   - If the Sonar analysis did not complete because the mvn verify command failed when the jacoco-check coverage threshold was reached, add additional unit tests to increase coverage.
    
 # Special instructions
 
