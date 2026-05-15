@@ -99,9 +99,10 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 	   - `<DD-MM-YY>` should be replaced with the current day, month, and year (e.g., `28-04-26` for April 28, 2026).
 	   - `<seqId>` should be a GUID (Globally Unique Identifier) value to ensure the branch name is unique, even if multiple branches are created on the same day.
 	   **Example:** `ai-fix-sec-sonar-iss/28-04-26-34c6c439-5d62-4629-ba68-795d73dd6a65`
+	- Save `FIX_ISSUES_BRANCH` value to the project context. 
 
 4. Create and swithch to the fix branch
-   - Create the branch: `FIX_ISSUES_BRANCH`.
+   - Create the branch: [FIX_ISSUES_BRANCH].
 
 5. Run Initial Sonar analysis
    - Run:
@@ -168,7 +169,8 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 # Goal
 
 1. Analyze the issue group
-   - Briefly explain the root cause of the current `[CURRENT_SONAR_ISSUES]`.
+   - Read the `FIX_ISSUES_BRANCH` from project context. 
+   - Briefly explain the root cause of the current `[CURRENT_SONAR_ISSUES]` defined in project context.
    - Open the affected files and inspect the exact code locations.
    - Use the SonarQube rule intent to drive the fix.
 
@@ -182,8 +184,11 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
    - Keep code style consistent.  
  	 
 3. Test coverage
-   - After applying the fix, ensure that the modified code is covered by unit tests.
+   - **IMPORTANT: Ensure that every newly added or modified line of source code is fully covered by unit tests. 
+       For each change, provide or update unit tests to verify all new logic, branches, and edge cases. 
+	   Do not consider the task complete until 100% coverage of new or changed code is achieved.**
    - **IMPORTENT: Follow the `Code Generation Rules` defined above.**
+   - After applying the fix, ensure that the modified code is covered by unit tests.
    - Add or update unit tests for modified files defined in the project context variable: `UPDATED_SOURCE_FILES`.
    - Prefer parameterized tests for similar scenarios.
    - Keep logic testable; if required, refactor for testability without changing behavior.
