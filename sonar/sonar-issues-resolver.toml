@@ -142,20 +142,23 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
    - Open the affected files and inspect the exact code locations.
    - Use the SonarQube rule intent to drive the fix.
 
-2. Apply the fix  
-   - **IMPORTENT: Follow the `Code Generation Rules` defined above.**
-   - **IMPORTENT: Prefer package or protected methods over private static methods when possible, as this allows for easier testing and mocking.**  
-   - Keep logic testable; if required, refactor for testability without changing behavior.
-   - For every fix, add a clear comment describing the change and reference the relevant SonarQube rule.
-   - Do not change existing comments.  
-   - Keep code style consistent.  
-   - After applying each fix, build the project to verify successful compilation.
+2. **Apply the Fix**
+   - **IMPORTANT:** Strictly follow the `Code Generation Rules` provided above.
+   - **IMPORTANT:** When implementing the fix, **prefer package-private or protected methods over private static methods** to facilitate easier testing and mocking.
+   - **IMPORTANT:** For every code change, **add a detailed comment directly above the modified code**. The comment must:
+     - Clearly describe the reason for the change.
+     - Reference the specific SonarQube rule (e.g., `// SonarQube: java:SXXXX - [Rule Description]`).
+     - Explain how the change addresses the issue.
+   - **Do not modify or remove any existing comments** in the code.
+   - **Maintain code style consistency** with the surrounding codebase.
+   - **Ensure logic remains testable**. If necessary, refactor code to improve testability, but do not alter the original behavior.
+   - **After each fix, build the project** to verify that it compiles successfully.
  	 
 3. Test coverage
    - **IMPORTANT: Ensure that every newly added or modified line of source code is fully covered by unit tests. 
        For each change, provide or update unit tests to verify all new logic, branches, and edge cases. 
 	   Do not consider the task complete until 100% coverage of new or changed code is achieved.**
-   - **IMPORTENT: Follow the `Code Generation Rules` defined above.**
+   - **IMPORTANT: Follow the `Code Generation Rules` defined above.**
    - After applying the fix, ensure that the modified code is covered by unit tests.
    - Add or update unit tests for modified files defined in the project context variable: `UPDATED_SOURCE_FILES`.
    - Prefer parameterized tests for similar scenarios.
