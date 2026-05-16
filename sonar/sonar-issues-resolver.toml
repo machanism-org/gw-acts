@@ -194,9 +194,10 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
    - Commands must be executed automatically.
 
 2. Prepare merge request content
+   - Read and review the `CURRENT_SONAR_ISSUES` from project context. 
    - Read `./target/sonar/report-task.txt` and obtain the dashboard URL.
    - Build:
-     - `MR_TITLE`
+     - For `MR_TITLE` use a description based on [CURRENT_SONAR_ISSUES] issue rule. 
      - `MR_DESCRIPTION`
    - `MR_DESCRIPTION` should include:
      - summary of changes,
