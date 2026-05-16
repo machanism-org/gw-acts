@@ -43,9 +43,9 @@ Fetch open issues from SonarQube, analyze them, and store grouped work items in 
 3. Build SonarQube API URL
    - Construct `SONARQUBE_URL` using `${SONAR_HOST_URL}` and the relevant query parameters.
    - Retrieve open issues for:
-     - `impactSoftwareQualities = ${QUALITIES}`
-     - `impactSeverities = ${SEVERITY}`
-     - project/component = `COMPONENT_KEYS`
+     - `impactSoftwareQualities = [QUALITIES]
+     - `impactSeverities = [SEVERITY]
+     - project/component = [COMPONENT_KEYS]
    - Use header authentication with `${SONAR_TOKEN}`.
    - Use the `SONARQUBE_URL` value as-is when calling the API.
 
