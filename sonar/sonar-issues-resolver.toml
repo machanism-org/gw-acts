@@ -30,8 +30,9 @@ Fetch open issues from SonarQube, analyze them, and store grouped work items in 
 
 # Steps
 
-1. Save current Git branch
-   - Save the current branch to project context variable `SOURCE_BRANCH`.
+1. Switch to the Source Branche
+   - Switch to the branche: [SOURCE_BRANCH].
+   - Save the current branch name to project context variable `SOURCE_BRANCH`.
 
 2. Determine Sonar component key
    - If `Relative Path from Root Directory` is not `.`, set:
@@ -89,6 +90,7 @@ Pop one grouped issue plan from context, fix it, validate it, commit it, run Son
 
 1. Switch to source branch
    - Switch to the branche by project context variable `SOURCE_BRANCH`.
+   - If project context variable `SOURCE_BRANCH` is not defined, swithch to the `${SOURCE_BRANCH}`.
 
 2. Load next work item
    - Pop `SONAR_ISSUES` and save it as `CURRENT_SONAR_ISSUES`.
