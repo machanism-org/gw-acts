@@ -145,7 +145,7 @@ It instructs Ghostwriter to:
 - Push the branch with GitLab merge-request options, including merge-request creation, target branch `main`, title, description, and source-branch removal.
 - Move back to episode 2 to process the next issue group.
 
-#### Context variables used
+#### Project context variables used
 
 The act coordinates state between episodes with project context variables, including:
 
@@ -162,17 +162,10 @@ The act expects these placeholders, metadata values, or environment-provided val
 
 - `${SONAR_HOST_URL}`
 - `${SONAR_TOKEN}`
-- `${SOURCE_BRANCH}`
 - `[SOURCE_BRANCH]`
 - `[QUALITIES]`
 - `[SEVERITY]`
 - `[COMPONENT_KEYS]`
-- `[Project Identifier]`
-- `[Parent Directory Name]`
-- `[Relative Path from Root Directory]`
-- `[Modules]`
-- `[FIX_ISSUES_BRANCH]`
-- `[CURRENT_SONAR_ISSUES]`
 
 #### Usage
 
